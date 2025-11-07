@@ -1,0 +1,28 @@
+### Example KQL Queries Generated ###
+
+--- Query 1 ---
+SecurityEvents
+| where Timestamp between (now-1h) and (now-0h)
+| where UserName == "jdoe@company.com"
+| where IP_Address == "192.168.1.105"
+| where Process == "powershell.exe"
+| where ParentProcess == "outlook.exe"
+
+--- Query 2 ---
+Process
+| where TimeStamp > ago(1h) and Username_S =~ "jdoe@company.com" and IP_S == "192.168.1.105" and ParentProcess_S == "outlook.exe" and ProcessName_S != "outlook.exe"
+| where ProcessName_S in ("powershell.exe", "cmd.exe") or (ProcessDepth > 1) or (Cpu > 20) or (NetworkIO_BYTES_OUT > 5MB) or (NetworkIO_BYTES_IN > 5MB)
+| top 10 by Cpu desc, NetworkIO_BYTES_OUT desc, NetworkIO_BYTES_IN desc, TimeStamp asc
+
+--- Query 3 ---
+process "powershell.exe" | where TimeGenerated > ago(1h) and UserName_s == "jdoe@company.com" and ProcessId_s == parentprocess(outlook.exe, TimeGenerated > ago(1h)) and NetworkConnectionType == "Outbound"
+
+--- Query 4 ---
+Process
+  | where Username=="jdoe@company.com" and TimeGenerated > ago(1h) and Image!="powershell.exe" and ParentProcess_IsNotNull,
+  Events
+    | where EventID == 4688 and Username == "jdoe@company.com" and TimeGenerated > ago(1h)
+      and Image in ("outlook.exe", "powershell.exe")
+      and (TargetProcessId_IsNotNull or TargetUsername_IsNotNull)
+  | extend ParentProcess = iff(isnotnull(ParentProcessId), ProcessName, TargetUsername)
+  | where ParentProcess == "outlook.exe"

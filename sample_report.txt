@@ -1,0 +1,3 @@
+### Sample Investigation Report ###
+
+Error: Could not get response from LLM. HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=120)
